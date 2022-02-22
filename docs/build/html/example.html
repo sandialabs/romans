@@ -1,0 +1,743 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utilities" href="utilities.html" />
+    <link rel="prev" title="Visualization" href="visualization.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="example">
+<span id="id1"></span><h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
+<p>Here we provide a step-by-step example using the data from the following paper:</p>
+<p>Montes de Oca Zapiain, D., Stewart, J.A. &amp; Dingreville, R. “Accelerating
+phase-field-based microstructure evolution predictions via surrogate models
+trained by machine learning methods.” npj Comput Mater 7, 3 (2021).
+<a class="reference external" href="https://doi.org/10.1038/s41524-020-00471-8">https://doi.org/10.1038/s41524-020-00471-8</a></p>
+<div class="section" id="test-data">
+<h2>Test Data<a class="headerlink" href="#test-data" title="Permalink to this headline">¶</a></h2>
+<p>We start with an easier computation using only the test data.  We assume the
+test data is in the directory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span>
+</pre></div>
+</div>
+<div class="section" id="pre-processing">
+<h3>Pre-processing<a class="headerlink" href="#pre-processing" title="Permalink to this headline">¶</a></h3>
+<p>This directory contains <code class="docutils literal notranslate"><span class="pre">workdir.1</span></code> to <code class="docutils literal notranslate"><span class="pre">workdir.500</span></code>, with each of these
+directories containing an input deck for MEMPHIS in <code class="docutils literal notranslate"><span class="pre">in.cahn_hilliard</span></code> and
+outputs from the simulation in <code class="docutils literal notranslate"><span class="pre">out.cahn_hilliard_0.vtk</span></code> to
+<code class="docutils literal notranslate"><span class="pre">out.cahn_hilliard_50000000.vtk</span></code>, at intervals with a step size of 500,000.</p>
+<p>To create an initial .csv table which includes the metadata for running the
+simulations, we use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">create</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="ow">in</span><span class="o">.</span><span class="n">cahn_hilliard</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Input Deck&quot;</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">metadata</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">index</span> <span class="s2">&quot;Simulation Index&quot;</span>
+</pre></div>
+</div>
+<p>Next we create movies of each of the simulations using the time steps provided:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">convert</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_</span><span class="o">%</span><span class="n">d</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">format</span> <span class="n">mp4</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">movies</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">header</span> <span class="n">Movie</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">color</span><span class="o">-</span><span class="n">scale</span> <span class="mi">0</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>This step creates a mirrored directory structure in our output directory
+<code class="docutils literal notranslate"><span class="pre">data/phase-field/test_out</span></code>.  Each of the directories <code class="docutils literal notranslate"><span class="pre">workdir.*</span></code> in this
+directory will contain a .mp4 file containing the generated videos.  The videos
+will have the name <code class="docutils literal notranslate"><span class="pre">out.cahn_hilliard_phase_field.mp4</span></code> created by using
+the root name <code class="docutils literal notranslate"><span class="pre">out.cahn_hilliard_</span></code> and the field variable <code class="docutils literal notranslate"><span class="pre">phase_field</span></code>
+provided in the command line call.</p>
+<p>We also want to create images from the end state of the simulations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">convert</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_50000000</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">format</span> <span class="n">jpg</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;End State&quot;</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">color</span><span class="o">-</span><span class="n">scale</span> <span class="mi">0</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>This command creates files <code class="docutils literal notranslate"><span class="pre">out.cahn_hilliard_50000000.jpg</span></code> in each of the <code class="docutils literal notranslate"><span class="pre">workdir.*</span></code>
+subdirectories of the <code class="docutils literal notranslate"><span class="pre">data/phase-field/test_out</span></code> directory.</p>
+<p>Now we can create a .csv table with file links to both the movies and the end state images
+using (from the output directory):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">join</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">movies</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">ps</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">no</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">ignore</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">headers</span> <span class="n">mobility_coefficients</span><span class="o">-</span><span class="mi">1</span> <span class="n">mobility_coefficients</span><span class="o">-</span><span class="mi">2</span> <span class="n">composition_distribution</span><span class="o">-</span><span class="mi">1</span> <span class="s2">&quot;End State&quot;</span> <span class="s2">&quot;Movie&quot;</span> \
+    <span class="o">--</span><span class="n">uri</span><span class="o">-</span><span class="n">root</span><span class="o">-</span><span class="n">out</span> <span class="n">file</span><span class="p">:</span><span class="o">//</span><span class="n">memphis</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">convert</span><span class="o">-</span><span class="n">cols</span> <span class="s2">&quot;End State&quot;</span> <span class="s2">&quot;Movie&quot;</span>
+</pre></div>
+</div>
+<p>The resulting .csv table includes file pointers to the movies and end state images stored in
+the directory <code class="docutils literal notranslate"><span class="pre">file://memphis/phase-field/test_out</span></code>.  Assuming the
+permissions are set correctly for these files, the table <code class="docutils literal notranslate"><span class="pre">ps.csv</span></code> can be imported
+into Slycat as a Parameter Space model.  The Slycat visualization is shown below.</p>
+<a class="reference internal image-reference" href="_images/ps.png"><img alt="Slycat Parameter Space Model" src="_images/ps.png" style="width: 800px;" /></a>
+</div>
+<div class="section" id="dimension-reduction">
+<h3>Dimension Reduction<a class="headerlink" href="#dimension-reduction" title="Permalink to this headline">¶</a></h3>
+<p>Dimension reduction can be performed using a variety of strategies and algorithms.</p>
+<div class="section" id="single-time-step">
+<h4>Single Time Step<a class="headerlink" href="#single-time-step" title="Permalink to this headline">¶</a></h4>
+<p>The simplest dimension reduction is performed on a single time step for each simulation.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_50000000</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_PCA</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">PCA</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">2</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">auto</span><span class="o">-</span><span class="n">correlate</span> <span class="o">--</span><span class="n">binary</span> \
+    <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">out</span> <span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Auto-PCA End State&quot;</span>
+</pre></div>
+</div>
+<p>This command produces a file <code class="docutils literal notranslate"><span class="pre">auto-PCA-end-state.csv</span></code> which contains the (x,y) coordinates.
+This file can be joined into a .csv table that can be imported into Slycat, using (from the
+output directory):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">join</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">movies</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">ps</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">no</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">ignore</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">uri</span><span class="o">-</span><span class="n">root</span><span class="o">-</span><span class="n">out</span> <span class="n">file</span><span class="p">:</span><span class="o">//</span><span class="n">memphis</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">convert</span><span class="o">-</span><span class="n">cols</span> <span class="s2">&quot;End State&quot;</span> <span class="s2">&quot;Movie&quot;</span>
+</pre></div>
+</div>
+<p>The resulting file <code class="docutils literal notranslate"><span class="pre">ps-PCA.csv</span></code> can be imported into Slycat as a parameter space model.
+The PCA coordinates can be plotted and the points colored according to composition distribution
+as shown below.</p>
+<a class="reference internal image-reference" href="_images/ps-PCA.png"><img alt="Auto-correlation and PCA of End State" src="_images/ps-PCA.png" style="width: 800px;" /></a>
+<p>This can be repeated using different dimension reduction algorithms, for example using
+Isomap:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_50000000</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_Isomap</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+     <span class="o">--</span><span class="n">algorithm</span> <span class="n">Isomap</span> \
+     <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">2</span> \
+     <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+     <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+     <span class="o">--</span><span class="n">auto</span><span class="o">-</span><span class="n">correlate</span> <span class="o">--</span><span class="n">binary</span> \
+     <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">out</span> <span class="n">auto</span><span class="o">-</span><span class="n">Isomap</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+     <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Auto-Isomap End State&quot;</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ps-isomap.png"><img alt="Auto-correlation and Isomap of End State" src="_images/ps-isomap.png" style="width: 800px;" /></a>
+<p>Or tSNE:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_50000000</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_auto_PCA</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">PCA</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">auto</span><span class="o">-</span><span class="n">correlate</span> <span class="o">--</span><span class="n">binary</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">30</span>
+
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_auto_PCA</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_tSNE</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">tSNE</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">2</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">out</span> <span class="n">auto</span><span class="o">-</span><span class="n">tSNE</span><span class="o">-</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">xy</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Auto-tSNE End State&quot;</span>
+</pre></div>
+</div>
+<p>The first step uses auto-correlation and PCA to reduce the dataset to 30 dimensions.  The
+second step does tSNE.</p>
+<a class="reference internal image-reference" href="_images/ps-tsne.png"><img alt="Auto-correlation and tSNE of End State" src="_images/ps-tsne.png" style="width: 800px;" /></a>
+<p>Many of these algorithms lack several features that are necessary to complete
+the entire simulation acceleration pipeline.  For example, Isomap and PCA operate only
+in-memory so that they cannot process extremely large datasets, e.g. a full ensemble.
+In addition, some of the algorithms cannot project a new data point into the reduced space
+after the fact.  Most of them also cannot reconstruct a data point from the reduced space
+into the full space.  Pre-processing, e.g. using auto-correlation, can also prevent
+reconstruction.</p>
+<p>Nevertheless, the algorithms and pre-processing steps can be used to analyze intermediate
+results to better visualize/understand the ensemble.</p>
+</div>
+<div class="section" id="all-time-steps">
+<h4>All Time Steps<a class="headerlink" href="#all-time-steps" title="Permalink to this headline">¶</a></h4>
+<p>Of course, the dimension reduction algorithms can also be applied to the entire dataset,
+not just the end state, depending on how well the algorithm scales to large datasets.  Since
+simulations generate massive amounts of data, algorithms such as Isomap and tSNE may not perform
+well enough to provide results for the entire dataset.</p>
+<p>However, incremental and landmark versions of the algorithms are available, and these
+algorithms are also supported by the romans dimension reduction utility.  A basic incremental
+algorithm is incremental PCA, which can be used as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_</span><span class="o">%</span><span class="n">d</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_inc_auto_PCA_10</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">incremental</span><span class="o">-</span><span class="n">PCA</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">auto</span><span class="o">-</span><span class="n">correlate</span> <span class="o">--</span><span class="n">binary</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">incremental</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Incremental Auto-PCA&quot;</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">model</span> <span class="n">inc</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">pkl</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">10</span> \
+    <span class="o">--</span><span class="n">file</span><span class="o">-</span><span class="n">batch</span><span class="o">-</span><span class="n">size</span> <span class="mi">1000</span>
+</pre></div>
+</div>
+<p>To use Slycat to visualize the results, use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">join</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">movies</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">incremental</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">metadata</span><span class="o">-</span><span class="n">inc</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">uri</span><span class="o">-</span><span class="n">root</span><span class="o">-</span><span class="n">out</span> <span class="n">file</span><span class="p">:</span><span class="o">//</span><span class="n">memphis</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">convert</span><span class="o">-</span><span class="n">cols</span> <span class="s2">&quot;End State&quot;</span> <span class="n">Movie</span>
+
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">expand</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">-</span><span class="n">inc</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">expand</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Incremental Auto-PCA&quot;</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">ps</span><span class="o">-</span><span class="n">inc</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">plugin</span> <span class="n">parameter_space</span> \
+    <span class="o">--</span><span class="n">remove</span><span class="o">-</span><span class="n">expand</span><span class="o">-</span><span class="n">col</span> \
+    <span class="o">--</span><span class="n">include</span><span class="o">-</span><span class="n">original</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">3</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">no</span><span class="o">-</span><span class="n">index</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/ps-inc-auto-PCA.png"><img alt="Auto-correlation and PCA for All Time Steps" src="_images/ps-inc-auto-PCA.png" style="width: 800px;" /></a>
+</div>
+<div class="section" id="time-aligned-dimension-reduction">
+<h4>Time-Aligned Dimension Reduction<a class="headerlink" href="#time-aligned-dimension-reduction" title="Permalink to this headline">¶</a></h4>
+<p>The dimension reduction utility includes a time-aligned dimension reduction meta-algorithm
+which is ideally suited for numerical simulation output.  The time-aligned algorithm perfoms
+a reduction at each time step then aligns those reductions as a last step using the Kabsch
+algorithm.  This provides a natural way to divide the work and also respects the importance
+of time in simulation data.  The time-aligned reduction algorithm can be used by throwing the
+<code class="docutils literal notranslate"><span class="pre">--time-align</span></code> argument, as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">reduce</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_data</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">files</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_</span><span class="o">%</span><span class="n">d</span><span class="o">.</span><span class="n">vtk</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_time_aligned_PCA</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">PCA</span> \
+    <span class="o">--</span><span class="n">time</span><span class="o">-</span><span class="n">align</span> <span class="mi">10</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">2</span> \
+    <span class="o">--</span><span class="n">auto</span><span class="o">-</span><span class="n">correlate</span> <span class="o">--</span><span class="n">binary</span> \
+    <span class="o">--</span><span class="n">field</span><span class="o">-</span><span class="n">var</span> <span class="n">phase_field</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">file</span><span class="o">-</span><span class="n">batch</span><span class="o">-</span><span class="n">size</span> <span class="mi">500</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">time</span><span class="o">-</span><span class="n">aligned</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Time Aligned PCA&quot;</span>
+</pre></div>
+</div>
+<p>The results of the time aligned reduction can be used to create a Slycat VideoSwarm model
+using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">join</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">end</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">movies</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">time</span><span class="o">-</span><span class="n">aligned</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">ignore</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">metadata</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">aligned</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">no</span><span class="o">-</span><span class="n">index</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">headers</span> <span class="n">mobility_coefficients</span><span class="o">-</span><span class="mi">1</span> <span class="n">mobility_coefficients</span><span class="o">-</span><span class="mi">2</span> <span class="n">composition_distribution</span><span class="o">-</span><span class="mi">1</span> <span class="s2">&quot;End State&quot;</span> <span class="n">Movie</span> <span class="s2">&quot;Time Aligned PCA&quot;</span> \
+    <span class="o">--</span><span class="n">uri</span><span class="o">-</span><span class="n">root</span><span class="o">-</span><span class="n">out</span> <span class="n">file</span><span class="p">:</span><span class="o">//</span><span class="n">memphis</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span> \
+    <span class="o">--</span><span class="n">convert</span><span class="o">-</span><span class="n">cols</span> <span class="s2">&quot;End State&quot;</span> <span class="n">Movie</span>
+
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">table</span> <span class="o">--</span><span class="n">expand</span> \
+    <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">metadata</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">aligned</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">expand</span><span class="o">-</span><span class="n">header</span> <span class="s2">&quot;Time Aligned PCA&quot;</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="nb">dir</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">vs</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">aligned</span> \
+    <span class="o">--</span><span class="n">csv</span><span class="o">-</span><span class="n">out</span> <span class="n">videoswarm</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">plugin</span> <span class="n">videoswarm</span> \
+    <span class="o">--</span><span class="n">remove</span><span class="o">-</span><span class="n">expand</span><span class="o">-</span><span class="n">col</span> \
+    <span class="o">--</span><span class="n">video</span><span class="o">-</span><span class="n">fps</span> <span class="mi">25</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/vs-time-aligned.png"><img alt="Time Aligned PCA in VideoSwarm" src="_images/vs-time-aligned.png" style="width: 800px;" /></a>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Currently VideoSwarm supports only videos written at 25 FPS.</p>
+</div>
+<p>Details on the time-aligned algorithm can be found in the publication:</p>
+<p>Martin S., Sielicki, M. A., Gittinger, J., Letter, M., Hunt, W. L., and Crossno, P. J.,
+“VideoSwarm: Analyzing Video Ensembles”, Visualization and Data Analysis 2019,
+Burlingame, CA, USA, 16-17 January 2019. <a class="reference external" href="https://doi.org/10.2352/ISSN.2470-1173.2019.1.VDA-685">https://doi.org/10.2352/ISSN.2470-1173.2019.1.VDA-685</a></p>
+</div>
+</div>
+<div class="section" id="proxy-model-training">
+<h3>Proxy Model Training<a class="headerlink" href="#proxy-model-training" title="Permalink to this headline">¶</a></h3>
+<p>Once an appropriate dimension reduction has been performed, a proxy model can be trained
+on the simulation output.  In the case of this example, we use auto-correlation followed
+by PCA.  To train a proxy model using an LSTM neural network, we use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">model</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">401</span><span class="p">]</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_inc_auto_PCA_10</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">train</span> <span class="o">%</span><span class="n">d</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">90</span><span class="p">]</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">model</span> <span class="n">LSTM</span><span class="o">-</span><span class="n">model</span><span class="o">.</span><span class="n">pkl</span> \
+    <span class="o">--</span><span class="n">algorithm</span> <span class="n">LSTM</span> \
+    <span class="o">--</span><span class="n">num</span><span class="o">-</span><span class="n">dim</span> <span class="mi">5</span> \
+    <span class="o">--</span><span class="n">LSTM</span><span class="o">-</span><span class="n">steps</span> <span class="mi">10</span>
+
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">model</span> <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span><span class="p">[</span><span class="mi">401</span><span class="p">:]</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_inc_auto_PCA_10</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">LSTM</span><span class="o">-</span><span class="n">preds</span><span class="o">.</span><span class="n">px</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">test</span> <span class="o">%</span><span class="n">d</span><span class="p">[</span><span class="mi">20</span><span class="p">:</span><span class="mi">90</span><span class="p">]</span> <span class="mi">11</span> \
+    <span class="o">--</span><span class="n">over</span><span class="o">-</span><span class="n">write</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">model</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">LSTM</span><span class="o">-</span><span class="n">model</span><span class="o">.</span><span class="n">pkl</span>
+</pre></div>
+</div>
+<p>The first command trains the model using the first 400 simulations, and the second
+produces predictions using the last 100 simulations.  After a model has been trained,
+the optimization statistics can be plotted, using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">validate</span> <span class="o">--</span><span class="n">proxy</span> \
+    <span class="o">--</span><span class="n">ensemble</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">workdir</span><span class="o">.%</span><span class="n">d</span><span class="p">[</span><span class="mi">401</span><span class="p">:]</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span> <span class="n">out</span><span class="o">.</span><span class="n">cahn_hilliard_inc_auto_PCA_10</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">LSTM</span><span class="o">-</span><span class="n">predictions</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">pred</span><span class="o">-</span><span class="n">file</span> <span class="n">LSTM</span><span class="o">-</span><span class="n">preds</span><span class="o">.</span><span class="n">px</span><span class="o">.</span><span class="n">npy</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">model</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">LSTM</span><span class="o">-</span><span class="n">model</span><span class="o">.</span><span class="n">pkl</span> \
+    <span class="o">--</span><span class="n">test</span> <span class="o">%</span><span class="n">d</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">90</span><span class="p">]</span> <span class="mi">11</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/LSTM-predictions-1.png"><img alt="LSTM Training Statistics" src="_images/LSTM-predictions-1.png" style="width: 800px;" /></a>
+<a class="reference internal image-reference" href="_images/LSTM-predictions-2.png"><img alt="LSTM Training Statistics" src="_images/LSTM-predictions-2.png" style="width: 800px;" /></a>
+<p>The validate command can also be used to show the variance captured using the dimension
+reduction algorithm:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">validate</span> <span class="o">--</span><span class="n">reduction</span> \
+    <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">model</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">inc</span><span class="o">-</span><span class="n">auto</span><span class="o">-</span><span class="n">PCA</span><span class="o">.</span><span class="n">pkl</span> \
+    <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="n">data</span><span class="o">/</span><span class="n">phase</span><span class="o">-</span><span class="n">field</span><span class="o">/</span><span class="n">test_out</span><span class="o">/</span><span class="n">pca</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">stats</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="full-dataset">
+<h2>Full dataset<a class="headerlink" href="#full-dataset" title="Permalink to this headline">¶</a></h2>
+<p>To use the romans tools on the full phase-field dataset, a super (parallel) computer should
+be used.  The romans tools can be used in parallel with ipyparallel.  Depending on the setup
+of the cluster, the following commands/batch scripts would be used to perform an analysis on
+the full phase-field dataset.  The necessary steps are described below.  The source code is
+in the <code class="docutils literal notranslate"><span class="pre">cluster</span></code> directory of the romans repository.</p>
+<p>To perform the incremental auto-correlated PCA reduction used in (de Oca Zapiain, et al.),
+the following batch script should first be run on the training set.  The precise form of
+the batch script will depend on the cluster.</p>
+<div class="highlight-batch notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+ 
+# Copyright (c) 2021 National Technology and Engineering Solutions of Sandia, LLC.  
+# Under the terms of Contract DE-NA0003525 with National Technology and Engineering 
+# Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+
+#SBATCH --account=your-account
+#SBATCH --job-name=memphis
+#SBATCH --partition=batch
+ 
+#SBATCH --nodes=24
+#SBATCH --ntasks-per-node=8
+#SBATCH --time=18:00:0
+
+module load python3
+export PYTHONPATH=/users/your-user-name/romans:/users/your-user-name/romans/romans
+
+profile=default
+ipython profile create --parallel
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Controller ...&quot;</span>
+ipcontroller --ip=&#39;*&#39; <span class="p">&amp;</span>
+sleep 1m
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Engines ...&quot;</span>
+srun ipengine <span class="p">&amp;</span>
+sleep 1m
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Job ...&quot;</span>
+
+python -m reduce --ensemble phase-field/training_data/workdir.%d \
+    --input-files out.cahn_hilliard_%d.vtk \
+    --output-dir phase-field/inc-auto-PCA/train \
+    --output-file out.cahn_hilliard_inc_auto_PCA.rd.npy \
+    --algorithm incremental-PCA \
+    --auto-correlate --binary \
+    --num-dim 10 \
+    --over-write \
+    --field-var phase_field \
+    --csv-out inc-auto-PCA-train.csv \
+    --csv-header <span class="s2">&quot;Incremental Auto-PCA&quot;</span> \
+    --file-batch-size 2500 \
+    --output-model inc-auto-PCA.pkl \
+    --restart phase-field/inc-auto-PCA/train/restart.pkl \
+    --parallel
+</pre></div>
+</div>
+<p>Next, the test set can be reduced by projection using the model learned on the training set.</p>
+<div class="highlight-batch notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+
+# Copyright (c) 2021 National Technology and Engineering Solutions of Sandia, LLC.  
+# Under the terms of Contract DE-NA0003525 with National Technology and Engineering 
+# Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+
+#SBATCH --account=your-account
+#SBATCH --job-name=memphis
+#SBATCH --partition=short,batch
+ 
+#SBATCH --nodes=24
+#SBATCH --ntasks-per-node=8
+#SBATCH --time=4:00:0
+
+module load python3
+export PYTHONPATH=/users/your-user-name/romans:/users/your-user-name/romans/romans
+
+profile=default
+ipython profile create --parallel
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Controller ...&quot;</span>
+ipcontroller --ip=&#39;*&#39; <span class="p">&amp;</span>
+sleep 1m
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Engines ...&quot;</span>
+srun ipengine <span class="p">&amp;</span>
+sleep 1m
+
+<span class="k">echo</span> <span class="s2">&quot;Launching Job ...&quot;</span>
+
+python -m reduce --ensemble phase-field/test_data/workdir.%d \
+    --input-files out.cahn_hilliard_%d.vtk \
+    --output-dir phase-field/inc-auto-PCA/test \
+    --output-file out.cahn_hilliard_inc_auto_PCA.rd.npy \
+    --input-model phase-field/inc-auto-PCA/train/inc-auto-PCA.pkl \
+    --auto-correlate --binary \
+    --over-write \
+    --field-var phase_field \
+    --csv-out inc-auto-PCA-test.csv \
+    --csv-header <span class="s2">&quot;Incremental Auto-PCA&quot;</span> \
+    --parallel \
+    --file-batch-size 2500 \
+</pre></div>
+</div>
+<p>Finally, a Slycat Parameter Space model can be generated using the <code class="docutils literal notranslate"><span class="pre">ps-csv.py</span></code> script in
+<code class="docutils literal notranslate"><span class="pre">cluster</span></code>.  The code is shown below as an example.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright (c) 2021 National Technology and Engineering Solutions of Sandia, LLC.  </span>
+<span class="c1"># Under the terms of Contract DE-NA0003525 with National Technology and Engineering </span>
+<span class="c1"># Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.</span>
+
+<span class="c1"># This script creates a Slycat parameter space model for the</span>
+<span class="c1"># dimension reduction model on the cluster.  We assume we</span>
+<span class="c1"># have the files available:</span>
+<span class="c1">#</span>
+<span class="c1"># Phase Field Data:</span>
+<span class="c1"># phase-field/training_data</span>
+<span class="c1"># phase-field/test_data</span>
+<span class="c1">#</span>
+<span class="c1"># Media Files (see run-*-media.sh):</span>
+<span class="c1"># phase-field/train_media</span>
+<span class="c1"># phase-field/test_media</span>
+<span class="c1">#</span>
+<span class="c1"># Dimension Reduction (this can be any directory, for example inc-auto-PCA):</span>
+<span class="c1"># phase-field/inc-auto-PCA/train/inc-auto-PCA-train.csv</span>
+<span class="c1"># phase-field/inc-auto-PCA/test/inc-auto-PCA-test.csv</span>
+
+<span class="c1"># The script should be run from the appropriate directory on the</span>
+<span class="c1"># cluster, e.g. inc-auto-PCA.  From there it locates the above files.</span>
+
+<span class="c1"># S. Martin</span>
+<span class="c1"># 6/28/2021</span>
+
+<span class="kn">from</span> <span class="nn">algorithms.reduction</span> <span class="kn">import</span> <span class="n">DimensionReduction</span>
+<span class="kn">import</span> <span class="nn">romans.table</span> <span class="k">as</span> <span class="nn">table</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c1"># the training data and media are in fixed locations</span>
+<span class="n">train_data_dir</span> <span class="o">=</span> <span class="s1">&#39;phase-field/training_data&#39;</span>
+<span class="n">test_data_dir</span> <span class="o">=</span> <span class="s1">&#39;phase-field/test_data&#39;</span>
+
+<span class="n">train_media</span> <span class="o">=</span> <span class="s1">&#39;phase-field/train_media&#39;</span>
+<span class="n">test_media</span> <span class="o">=</span> <span class="s1">&#39;phase-field/test_media&#39;</span>
+
+<span class="c1"># uri-root-out conversion (location of files on cluster)</span>
+<span class="n">uri_root</span> <span class="o">=</span> <span class="s1">&#39;file://&#39;</span>
+
+<span class="c1"># flags to prevent re-running tasks</span>
+<span class="n">create_train</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">create_test</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">concat_train_test</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">expand_reduction</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1"># do everything</span>
+<span class="n">create_all</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># look for files relative to current directory</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+<span class="c1"># get .csv file in train or test directory</span>
+<span class="k">def</span> <span class="nf">get_csv_file</span> <span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">train</span><span class="p">):</span>
+
+    <span class="c1"># the .csv files are always in train/*.csv and test/*.csv</span>
+    <span class="n">train_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">train</span><span class="p">)</span>
+    <span class="n">train_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">train_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">))]</span>
+    <span class="n">train_csv_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">train_files</span> <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># check that there is only on .csv file</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_csv_files</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Did not find a unique .csv file in &quot;</span> <span class="o">+</span> <span class="n">train</span> <span class="o">+</span> <span class="s2">&quot; directory -- &quot;</span> <span class="o">+</span>  \
+            <span class="s2">&quot;could not generate parameter space .csv file.&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+    <span class="c1"># dimension reduction .csv file</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_dir</span><span class="p">,</span> <span class="n">train_csv_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># get training/testing .csv files</span>
+<span class="n">train_reduction</span> <span class="o">=</span> <span class="n">get_csv_file</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">)</span>
+<span class="n">test_reduction</span> <span class="o">=</span> <span class="n">get_csv_file</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+
+<span class="c1"># get dimension reduction header from .csv file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">train_reduction</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">dimension_reduction_header</span> <span class="o">=</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="c1"># create training table</span>
+<span class="k">if</span> <span class="n">create_train</span> <span class="ow">or</span> <span class="n">create_all</span><span class="p">:</span>
+    
+    <span class="c1"># create a metadata file for the test data</span>
+    <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--create&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+                <span class="s1">&#39;--ensemble&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_data_dir</span><span class="p">,</span> <span class="s1">&#39;workdir.</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--input-files&#39;</span><span class="p">,</span> <span class="s1">&#39;in.cahn_hilliard&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--input-header&#39;</span><span class="p">,</span> <span class="s1">&#39;Input Deck&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-train.csv&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--csv-index&#39;</span><span class="p">,</span> <span class="s1">&#39;Simulation Index&#39;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created metadata-train.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># join images, videos, and dimension reduction</span>
+    <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--join&#39;</span><span class="p">,</span> 
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-train.csv&#39;</span><span class="p">),</span>
+                <span class="n">train_reduction</span><span class="p">,</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_media</span><span class="p">,</span> <span class="s1">&#39;end-state.csv&#39;</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_media</span><span class="p">,</span> <span class="s1">&#39;movies.csv&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media-train.csv&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--ignore-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-no-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--uri-root-out&#39;</span><span class="p">,</span> <span class="n">uri_root</span> <span class="o">+</span> <span class="n">train_media</span><span class="p">,</span>
+                <span class="s1">&#39;--convert-cols&#39;</span><span class="p">,</span> <span class="s1">&#39;End State&#39;</span><span class="p">,</span> <span class="s1">&#39;Movie&#39;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created metadata-reduction-media-train.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># create test table</span>
+<span class="k">if</span> <span class="n">create_test</span> <span class="ow">or</span> <span class="n">create_all</span><span class="p">:</span>
+
+    <span class="c1"># create a metadata file for the test data</span>
+    <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--create&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+                <span class="s1">&#39;--ensemble&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s1">&#39;workdir.</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--input-files&#39;</span><span class="p">,</span> <span class="s1">&#39;in.cahn_hilliard&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--input-header&#39;</span><span class="p">,</span> <span class="s1">&#39;Input Deck&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-test.csv&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--csv-index&#39;</span><span class="p">,</span> <span class="s1">&#39;Simulation Index&#39;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created metadata-test.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># join images, videos, and dimension reduction</span>
+    <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--join&#39;</span><span class="p">,</span> 
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-test.csv&#39;</span><span class="p">),</span>
+                <span class="n">test_reduction</span><span class="p">,</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_media</span><span class="p">,</span> <span class="s1">&#39;end-state.csv&#39;</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_media</span><span class="p">,</span> <span class="s1">&#39;movies.csv&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media-test.csv&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-no-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--ignore-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--uri-root-out&#39;</span><span class="p">,</span> <span class="n">uri_root</span> <span class="o">+</span> <span class="n">test_media</span><span class="p">,</span>
+                <span class="s1">&#39;--convert-cols&#39;</span><span class="p">,</span> <span class="s1">&#39;End State&#39;</span><span class="p">,</span> <span class="s1">&#39;Movie&#39;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created metadata-reduction-media-test.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># join train/test tables</span>
+<span class="k">if</span> <span class="n">concat_train_test</span> <span class="ow">or</span> <span class="n">create_all</span><span class="p">:</span>
+
+    <span class="c1"># now we concatenate the tables</span>
+    <span class="n">arg_list</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--concat&#39;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media-train.csv&#39;</span><span class="p">),</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media-test.csv&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+            <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media.csv&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--add-origin-col&#39;</span><span class="p">,</span> <span class="s1">&#39;Train/Test&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--origin-col-names&#39;</span><span class="p">,</span> <span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Concatenated metadata-reduction-media.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># expand dimension reduction coordinates</span>
+<span class="k">if</span> <span class="n">expand_reduction</span> <span class="ow">or</span> <span class="n">create_all</span><span class="p">:</span>
+
+    <span class="c1"># test parameter space expansion (using full auto-PCA dataset)</span>
+    <span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--expand&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;metadata-reduction-media.csv&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;--expand-header&#39;</span><span class="p">,</span> <span class="n">dimension_reduction_header</span><span class="p">,</span>
+                <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="s1">&#39;ps.csv&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--plugin&#39;</span><span class="p">,</span> <span class="s1">&#39;parameter_space&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--remove-expand-col&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--include-original-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--num-dim&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-no-index&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--over-write&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;--csv-headers&#39;</span><span class="p">,</span> <span class="s1">&#39;mobility_coefficients-1&#39;</span><span class="p">,</span> <span class="s1">&#39;mobility_coefficients-2&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;composition_distribution-1&#39;</span><span class="p">,</span> <span class="s1">&#39;End State&#39;</span><span class="p">,</span> <span class="s1">&#39;Movie&#39;</span><span class="p">,</span> <span class="s1">&#39;Train/Test&#39;</span><span class="p">,</span>
+                <span class="n">dimension_reduction_header</span> <span class="o">+</span> <span class="s2">&quot; Dimension 1&quot;</span><span class="p">,</span>
+                <span class="n">dimension_reduction_header</span> <span class="o">+</span> <span class="s2">&quot; Dimension 2&quot;</span><span class="p">,</span>
+                <span class="n">dimension_reduction_header</span> <span class="o">+</span> <span class="s2">&quot; Dimension 3&quot;</span><span class="p">]</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created ps.csv.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the full dataset reduction.  It is (unsurprisingly) similar to the
+reduction on only the test data.</p>
+<a class="reference internal image-reference" href="_images/ps-inc-auto-PCA-full-data.png"><img alt="Auto-correlation and PCA for All Time Steps on Full Dataset" src="_images/ps-inc-auto-PCA-full-data.png" style="width: 800px;" /></a>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#test-data">Test Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#full-dataset">Full dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="visualization.html" title="previous chapter">Visualization</a></li>
+      <li>Next: <a href="utilities.html" title="next chapter">Utilities</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/example.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

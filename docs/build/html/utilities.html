@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilities &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plugins" href="plugins.html" />
+    <link rel="prev" title="Example" href="example.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="utilities">
+<span id="id1"></span><h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+<p>The command line utilities making up the simulation acceleration package are listed here.
+The available command line options for any utility can be seen using the <code class="docutils literal notranslate"><span class="pre">--help</span></code> flag.</p>
+<p>These utilities can also be called from within python, where the arguments are passed
+in a list, see <a class="reference internal" href="extension.html#extension"><span class="std std-ref">Extension</span></a>.</p>
+<div class="section" id="table-py">
+<h2>table.py<a class="headerlink" href="#table-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: table.py [-h] [--log-level {debug,info,warning,error,critical}]
+                [--log-file LOG_FILE] [--plugin PLUGIN] [--create]
+                [--join JOIN [JOIN ...]] [--concat CONCAT [CONCAT ...]]
+                [--expand EXPAND] [--ensemble ENSEMBLE]
+                [--input-files INPUT_FILES] [--input-header INPUT_HEADER]
+                [--input-format INPUT_FORMAT] [--ignore-index]
+                [--convert-cols CONVERT_COLS [CONVERT_COLS ...]]
+                [--uri-root-out URI_ROOT_OUT]
+                [--add-origin-col ADD_ORIGIN_COL]
+                [--origin-col-names ORIGIN_COL_NAMES [ORIGIN_COL_NAMES ...]]
+                [--expand-header EXPAND_HEADER] [--output-dir OUTPUT_DIR]
+                [--csv-out CSV_OUT] [--csv-no-index]
+                [--csv-index-header CSV_INDEX_HEADER]
+                [--csv-headers [CSV_HEADERS [CSV_HEADERS ...]]] [--over-write]
+
+Manipulates .csv files from ensemble data.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {debug,info,warning,error,critical}
+                        Log level. Default: &#39;info&#39;
+  --log-file LOG_FILE   Log to file. Notes: (1) If this file already exists it
+                        will be overwritten, (2) Log file includes time stamp
+                        and is set to debug level
+  --plugin PLUGIN       Plugin Python file name to import (defaults to
+                        memphis), can be either a plugin from romans/plugins
+                        (no extension) or a python file (.py extension). Use
+                        &quot;python -m romans.plugins.plugin --help&quot; to see any
+                        command line options for the plugin.
+  --create              Create ensemble .csv file from simulation input decks.
+  --join JOIN [JOIN ...]
+                        List of romans .csv files to join horizontally (first
+                        column is assumed to be index).
+  --concat CONCAT [CONCAT ...]
+                        List of romans .csv files to join vertically (all
+                        column headers must be identical).
+  --expand EXPAND       Expand links in .csv file to include data in table.
+                        Uses plugin to expand links.
+  --ensemble ENSEMBLE   Directory or directories to include in ensemble,
+                        specified using the Python like %d[::] notation
+                        described above.
+  --input-files INPUT_FILES
+                        Files per ensemble directory to use as input for
+                        metadata, specified using %d[::] notation. Note that
+                        these files will be pre-fixed by the ensemble
+                        directories.
+  --input-header INPUT_HEADER
+                        Name to assign input file header, e.g. &quot;Input Deck&quot;
+  --input-format INPUT_FORMAT
+                        Format for input files. Optional, inferred from file
+                        extension if not provided.
+  --ignore-index        Ignore index column when joining tables.
+  --convert-cols CONVERT_COLS [CONVERT_COLS ...]
+                        Converts the given columns using --uri-root-out when
+                        joining tables.
+  --uri-root-out URI_ROOT_OUT
+                        Root name of URI used to transform file pointers in
+                        .csv output file when joining files. Note that this
+                        will only work if the file pointers have a common
+                        root.
+  --add-origin-col ADD_ORIGIN_COL
+                        Add a column containing the data origin. This flag
+                        gives the new column name.
+  --origin-col-names ORIGIN_COL_NAMES [ORIGIN_COL_NAMES ...]
+                        Names to use for origin column, one per file to
+                        concatenate (defaults to file names).
+  --expand-header EXPAND_HEADER
+                        Table column to expand (either name or index).
+  --output-dir OUTPUT_DIR
+                        Output directory for any files produced.
+  --csv-out CSV_OUT     File name of output .csv file.
+  --csv-no-index        Do not output the index column.
+  --csv-index-header CSV_INDEX_HEADER
+                        Index header name for .csv file (default is None).
+  --csv-headers [CSV_HEADERS [CSV_HEADERS ...]]
+                        Output only the given headers to the .csv file
+                        (defaults to all headers).
+  --over-write          Over-write output file if already present.
+</pre></div>
+</div>
+</div>
+<div class="section" id="convert-py">
+<h2>convert.py<a class="headerlink" href="#convert-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: convert.py [-h] [--log-level {debug,info,warning,error,critical}]
+                  [--log-file LOG_FILE] [--plugin PLUGIN]
+                  [--ensemble ENSEMBLE] [--input-files INPUT_FILES]
+                  [--csv-file CSV_FILE] [--csv-col CSV_COL]
+                  [--input-format INPUT_FORMAT] [--output-dir OUTPUT_DIR]
+                  [--output-format OUTPUT_FORMAT] [--over-write]
+                  [--csv-out CSV_OUT] [--csv-header CSV_HEADER] [--parallel]
+
+Converts ensemble file formats. Uses Python-like %d[::] notation, where %d[::]
+specifies a range of numbers in a file name. For example
+&quot;time_step_%d[0:10:2].vtp&quot; would specify every other file from
+&quot;time_step_0.vtp&quot; to &quot;time_step_9.vtp&quot;.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {debug,info,warning,error,critical}
+                        Log level. Default: &#39;info&#39;
+  --log-file LOG_FILE   Log to file. Notes: (1) If this file already exists it
+                        will be overwritten, (2) Log file includes time stamp
+                        and is set to debug level
+  --plugin PLUGIN       Plugin Python file name to import (defaults to
+                        memphis), can be either a plugin from romans/plugins
+                        (no extension) or a python file (.py extension). Use
+                        &quot;python -m romans.plugins.plugin --help&quot; to see any
+                        command line options for the plugin.
+  --ensemble ENSEMBLE   Directory or directories to include in ensemble,
+                        specified using the Python like %d[::] notation
+                        described above.
+  --input-files INPUT_FILES
+                        Files per ensemble directory to use as input for
+                        conversion, specified using %d[::] notation. Note that
+                        these files will be pre-fixed by the ensemble
+                        directories.
+  --csv-file CSV_FILE   CSV file which specifies ensemble directories and
+                        input files (alternate to using --ensemble and
+                        --input-files).
+  --csv-col CSV_COL     Column in CSV file where input files are specified,
+                        can be either a string or an integer (1-based).
+  --input-format INPUT_FORMAT
+                        Format for input files (optional, inferred from file
+                        extension if not provided).
+  --output-dir OUTPUT_DIR
+                        Directory to place output. All files will be stored
+                        using directories that mirror those specified by
+                        --ensemble.
+  --output-format OUTPUT_FORMAT
+                        File output format information, e.g. file extension.
+  --over-write          Over-write output directory if already present.
+  --csv-out CSV_OUT     File name of output .csv file with file links for
+                        converted files (optional). Will be written to output
+                        directory.
+  --csv-header CSV_HEADER
+                        Name of output files header, needed only if writing
+                        out a .csv file.
+  --parallel            Use ipyparallel (must be available and running).
+</pre></div>
+</div>
+</div>
+<div class="section" id="reduce-py">
+<h2>reduce.py<a class="headerlink" href="#reduce-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: reduce.py [-h] [--log-level {debug,info,warning,error,critical}]
+                 [--log-file LOG_FILE] [--plugin PLUGIN] [--ensemble ENSEMBLE]
+                 [--input-files INPUT_FILES] [--csv-file CSV_FILE]
+                 [--csv-col CSV_COL] [--input-format INPUT_FORMAT]
+                 [--input-model INPUT_MODEL] [--output-dir OUTPUT_DIR]
+                 [--output-file OUTPUT_FILE] [--output-model OUTPUT_MODEL]
+                 [--over-write] [--csv-out CSV_OUT] [--csv-header CSV_HEADER]
+                 [--xy-out XY_OUT] [--xy-header XY_HEADER]
+                 [--file-batch-size FILE_BATCH_SIZE] [--parallel]
+                 [--restart RESTART]
+
+Performs dimemsion reduction on ensemble data. Uses Python-like %d[::]
+notation, where %d[::] specifies a range of numbers in a file name. For
+example &quot;time_step_%d[0:10:2].vtp&quot; would specify every other file from
+&quot;time_step_0.vtp&quot; to &quot;time_step_9.vtp&quot;. If individual time steps are provided
+as input, the results are combined into a single matrix and output. The output
+file extension is .rd.npy.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {debug,info,warning,error,critical}
+                        Log level. Default: &#39;info&#39;
+  --log-file LOG_FILE   Log to file. Notes: (1) If this file already exists it
+                        will be overwritten, (2) Log file includes time stamp
+                        and is set to debug level
+  --plugin PLUGIN       Plugin Python file name to import (defaults to
+                        memphis), can be either a plugin from romans/plugins
+                        (no extension) or a python file (.py extension). Use
+                        &quot;python -m romans.plugins.plugin --help&quot; to see any
+                        command line options for the plugin.
+  --ensemble ENSEMBLE   Directory or directories to include in ensemble,
+                        specified using the Python like %d[::] notation
+                        described above.
+  --input-files INPUT_FILES
+                        Files per ensemble directory to use as input for
+                        reduction, specified using %d[::] notation. Note that
+                        these files will be pre-fixed by the ensemble
+                        directories.
+  --csv-file CSV_FILE   CSV file which specifies ensemble directories and
+                        input files (alternate to using --ensemble and
+                        --input-files).
+  --csv-col CSV_COL     Column in CSV file where input files are specified,
+                        can be either a string or an integer (1-based).
+  --input-format INPUT_FORMAT
+                        Format for input files (optional, inferred from file
+                        extension if not provided).
+  --input-model INPUT_MODEL
+                        Input dimension reduction model from .pkl file (do not
+                        train a new model).
+  --output-dir OUTPUT_DIR
+                        Directory to place output. All files will be stored
+                        using directories that mirror those specified by
+                        --ensemble.
+  --output-file OUTPUT_FILE
+                        File name for reduced data, the same name is used for
+                        each simulation.
+  --output-model OUTPUT_MODEL
+                        Output dimension reduction model to provided file (in
+                        output directory).
+  --over-write          Over-write output directory if already present.
+  --csv-out CSV_OUT     File name of output .csv file with file links for
+                        reduced files (optional). Will be written to output
+                        directory.
+  --csv-header CSV_HEADER
+                        Name of output files header, needed only if writing
+                        out a .csv file.
+  --xy-out XY_OUT       File name of output .csv file with the (x,y)
+                        coordinates (optional). Will be written to output
+                        directory.
+  --xy-header XY_HEADER
+                        Root name of header for (x,y) coordinates columns in
+                        .csv file.
+  --file-batch-size FILE_BATCH_SIZE
+                        Train reduction model incrementally using batches of
+                        files. Not available for all algorithms, see
+                        romans.algorithms.reduction --help for options.
+  --parallel            Use ipyparallel (must be available and running).
+  --restart RESTART     File name to save intermediate results and then
+                        restart from a crash (must also specify --output-
+                        model).
+</pre></div>
+</div>
+</div>
+<div class="section" id="model-py">
+<h2>model.py<a class="headerlink" href="#model-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: model.py [-h] [--log-level {debug,info,warning,error,critical}]
+                [--log-file LOG_FILE] [--plugin PLUGIN] [--ensemble ENSEMBLE]
+                [--input-file INPUT_FILE] [--csv-file CSV_FILE]
+                [--csv-col CSV_COL] [--input-model INPUT_MODEL]
+                [--output-model OUTPUT_MODEL] [--output-file OUTPUT_FILE]
+                [--over-write] [--train TRAIN] [--test TEST TEST]
+                [--num-dim NUM_DIM] [--file-batch-size FILE_BATCH_SIZE]
+                [--parallel]
+
+Trains/tests reduced order proxy model for numerical simulations. Uses Python-
+like %d[::] notation, where %d[::] specifies a range of numbers in a directory
+name. For example &quot;workdir.%d[0:10:2]&quot; would specify every other file from
+&quot;workdir.0&quot; to &quot;workdir.9&quot;. Input files are expected to have the extension
+.rd.npy as output by the dimension reduction code reduce.py. The model is
+output as a .pkl file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {debug,info,warning,error,critical}
+                        Log level. Default: &#39;info&#39;
+  --log-file LOG_FILE   Log to file. Notes: (1) If this file already exists it
+                        will be overwritten, (2) Log file includes time stamp
+                        and is set to debug level
+  --plugin PLUGIN       Plugin Python file name to import (defaults to
+                        memphis), can be either a plugin from romans/plugins
+                        (no extension) or a python file (.py extension). Use
+                        &quot;python -m romans.plugins.plugin --help&quot; to see any
+                        command line options for the plugin.
+  --ensemble ENSEMBLE   Directory or directories to include in ensemble,
+                        specified using the Python like %d[::] notation
+                        described above.
+  --input-file INPUT_FILE
+                        Files per ensemble directory to use as input for a
+                        model. The input files are expected to have the same
+                        name and end with extension .rd.npy.
+  --csv-file CSV_FILE   CSV file which specifies ensemble directories and
+                        input files (alternate to using --ensemble and
+                        --input-files).
+  --csv-col CSV_COL     Column in CSV file where input files are specified,
+                        can be either a string or an integer (1-based).
+  --input-model INPUT_MODEL
+                        Input proxy model from .pkl file (only with when
+                        testing).
+  --output-model OUTPUT_MODEL
+                        Output dimension reduction model to provided file (in
+                        ensemlbe directory).
+  --output-file OUTPUT_FILE
+                        File name for output of test data, the same name is
+                        used for each simulation (only for testing). Files are
+                        written to ensemble directory.
+  --over-write          Over-write output if already present.
+  --train TRAIN         Train proxy model using input files with time steps
+                        specified using %d[::] notation.
+  --test TEST TEST      Test proxy model using --input-model, with %d[::] to
+                        specify time steps to use followed by number of future
+                        time steps to predict.
+  --num-dim NUM_DIM     Number of dimensions to use for the proxy model.
+  --file-batch-size FILE_BATCH_SIZE
+                        Train proxy model incrementally using batches of
+                        files. Not available for all algorithms, see
+                        romans.algorithms.proxy --help for options.
+  --parallel            Use ipyparallel (must be available and running).
+</pre></div>
+</div>
+</div>
+<div class="section" id="validate-py">
+<h2>validate.py<a class="headerlink" href="#validate-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: validate.py [-h] [--log-level {debug,info,warning,error,critical}]
+                   [--log-file LOG_FILE] [--plugin PLUGIN] [--reduction]
+                   [--proxy] [--ensemble ENSEMBLE] [--input-file INPUT_FILE]
+                   [--input-pred-file INPUT_PRED_FILE] [--csv-file CSV_FILE]
+                   [--csv-input-col CSV_INPUT_COL]
+                   [--csv-pred-col CSV_PRED_COL]
+                   [--input-pre-model INPUT_PRE_MODEL]
+                   [--input-model INPUT_MODEL]
+                   [--num-recon-images NUM_RECON_IMAGES] [--test TEST TEST]
+                   [--output-file OUTPUT_FILE]
+                   [--file-batch-size FILE_BATCH_SIZE] [--parallel]
+
+Validates a dimension reduction or proxy model by computing statistics and
+producing plots. Uses Python-like %d[::] notation, where %d[::] specifies a
+range of numbers in a directory name. For example &quot;workdir.%d[0:10:2]&quot; would
+specify every other file from &quot;workdir.0&quot;to &quot;workdir.9&quot;.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {debug,info,warning,error,critical}
+                        Log level. Default: &#39;info&#39;
+  --log-file LOG_FILE   Log to file. Notes: (1) If this file already exists it
+                        will be overwritten, (2) Log file includes time stamp
+                        and is set to debug level
+  --plugin PLUGIN       Plugin Python file name to import (defaults to
+                        memphis), can be either a plugin from romans/plugins
+                        (no extension) or a python file (.py extension). Use
+                        &quot;python -m romans.plugins.plugin --help&quot; to see any
+                        command line options for the plugin.
+  --reduction           Validate dimension reduction results. Note that you
+                        need to set the original arguments for the reduction
+                        algorithm to obtain accurate reconstructions.
+  --proxy               Validate proxy model.
+  --ensemble ENSEMBLE   Directory or directories to include in ensemble,
+                        specified using the Python like %d[::] notation
+                        described above.
+  --input-file INPUT_FILE
+                        Files per ensemble directory to use as input for a
+                        model. For proxy validation, the input files are
+                        expected to have the same name and end with extension
+                        .rd.npy.
+  --input-pred-file INPUT_PRED_FILE
+                        Files per ensemble directory containing proxy
+                        predictions. The prediction files are expected to have
+                        the same name and end with extension .px.npy.
+  --csv-file CSV_FILE   CSV file which specifies ensemble directories and
+                        input files (alternate to using --ensemble and
+                        --input-files).
+  --csv-input-col CSV_INPUT_COL
+                        Column in CSV file where input files are are
+                        specified, can be either a string or integer
+                        (1-based).
+  --csv-pred-col CSV_PRED_COL
+                        Column in CSV file where prediction files are are
+                        specified, can be either a string or integer
+                        (1-based).
+  --input-pre-model INPUT_PRE_MODEL
+                        Input model .pkl file to run before main model.
+  --input-model INPUT_MODEL
+                        Input proxy model from .pkl file.
+  --num-recon-images NUM_RECON_IMAGES
+                        Number of images to reconstruct using reduction
+                        algorithm (only applies to algorithmsthat have inverse
+                        transforms.
+  --test TEST TEST      Test proxy model using --input-model, with %d[::] to
+                        specify time steps to use followed by number of future
+                        time steps to predict.
+  --output-file OUTPUT_FILE
+                        Base file name for output of validation plots.
+                        Multiple plots use numbered suffixes. Any provided
+                        extension will be ignored (but not removed).
+  --file-batch-size FILE_BATCH_SIZE
+                        Train proxy model incrementally using batches of
+                        files. Not available for all algorithms, see
+                        romans.algorithms.proxy --help for options.
+  --parallel            Use ipyparallel (must be available and running).
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#table-py">table.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convert-py">convert.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reduce-py">reduce.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-py">model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#validate-py">validate.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="example.html" title="previous chapter">Example</a></li>
+      <li>Next: <a href="plugins.html" title="next chapter">Plugins</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/utilities.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,1121 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Development" href="development.html" />
+    <link rel="prev" title="Algorithms" href="algorithms.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="extension">
+<span id="id1"></span><h1>Extension<a class="headerlink" href="#extension" title="Permalink to this headline">¶</a></h1>
+<p>The romans package is designed to be easily extensible and adaptable for use with
+any numerical simulation.  The package consists of a core of Python modules and classes
+that perform functions that can be used with any simulation.  This core ranges from
+keeping track of simulation files and metadata to performing dimension reduction
+and training proxy models.</p>
+<p>In addition to this core there are utilities that provide a command line interface to
+the romans tools as well as plugins which form the basis of providing specific
+functions for different simulations.</p>
+<div class="section" id="utilities">
+<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
+<p>The utilities consist of the functions described previously in <a class="reference internal" href="usage.html#usage"><span class="std std-ref">Operation</span></a>, <a class="reference internal" href="utilities.html#utilities"><span class="std std-ref">Utilities</span></a>
+and <a class="reference internal" href="example.html#example"><span class="std std-ref">Example</span></a>.  These utilities can be called directly from the command line, or can be
+called from within another Python program.  The following example shows how to call a utility
+from within Python.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># table command line code</span>
+<span class="kn">import</span> <span class="nn">romans.table</span> <span class="k">as</span> <span class="nn">table</span>
+
+<span class="c1"># directory containing the phase-field test dataset</span>
+<span class="n">test_data_dir</span> <span class="o">=</span> <span class="s1">&#39;data/phase-field/test_data&#39;</span>
+
+<span class="c1"># output directory to use for testing</span>
+<span class="n">output_dir</span> <span class="o">=</span> <span class="s1">&#39;data/phase-field/test_table&#39;</span>
+
+<span class="c1"># create metadata table</span>
+<span class="n">arg_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--create&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--output-dir&#39;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span>
+            <span class="s1">&#39;--ensemble&#39;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_data_dir</span><span class="p">,</span> <span class="s1">&#39;workdir.</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;--input-files&#39;</span><span class="p">,</span> <span class="s1">&#39;in.cahn_hilliard&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--input-header&#39;</span><span class="p">,</span> <span class="s1">&#39;Input Deck&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--csv-out&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata.csv&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--csv-index&#39;</span><span class="p">,</span> <span class="s1">&#39;Simulation Index&#39;</span><span class="p">]</span>
+<span class="n">table</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This example produces a metadata table from the input decks of a MEMPHIS simulation.</p>
+</div>
+<div class="section" id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins provide the specific routines needed for a particular simulation.  These routines
+include code that reads specific file formats, file-conversion, and any particular pre-processing
+requirements.</p>
+<p>The routines are provided to romans by over-riding functions in the <code class="docutils literal notranslate"><span class="pre">PluginTemplate</span></code> class
+described in the following API section.  The <code class="docutils literal notranslate"><span class="pre">PluginTemplate</span></code> class provides very
+basic functionality, including mesh file reading capability (using meshio, see <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a>).
+Generally speaking, however, the basic template won’t work for a particular simulation.</p>
+<p>Plugins can be found in the romans/plugins source directory, but as an example,
+here a subroutine which over-rides the standard mesh reader in <code class="docutils literal notranslate"><span class="pre">PluginTemplate</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># read npy and sim.npy (also npy) formats</span>
+<span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_in</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="c1"># check file extension, if not provided</span>
+    <span class="k">if</span> <span class="n">file_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># npy file type</span>
+        <span class="k">if</span> <span class="n">file_in</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.npy&#39;</span><span class="p">):</span>
+            <span class="n">file_type</span> <span class="o">=</span> <span class="s1">&#39;npy&#39;</span>
+
+    <span class="c1"># check if we have npy or sim.npy</span>
+    <span class="k">if</span> <span class="n">file_type</span> <span class="o">==</span> <span class="s1">&#39;npy&#39;</span><span class="p">:</span>
+
+        <span class="c1"># read npy file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_in</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not read &quot;</span> <span class="o">+</span> <span class="n">file_in</span> <span class="o">+</span> <span class="s2">&quot; as a .npy file.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not read &quot;</span> <span class="o">+</span> <span class="n">file_in</span> <span class="o">+</span> <span class="s2">&quot; as a .npy file.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># otherwise default to mesh</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_in</span><span class="p">,</span> <span class="n">file_type</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="romans.ArgumentParser">
+<em class="property">class </em><code class="sig-prename descclassname">romans.</code><code class="sig-name descname">ArgumentParser</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">arguments</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">keywords</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.ArgumentParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an instance of argparse.ArgumentParser, pre-configured with arguments
+used to run romans tools.</p>
+<p>Command line flags defined by this class are:</p>
+<ul class="simple">
+<li><p>--log-level</p></li>
+<li><p>--log-file</p></li>
+<li><p>--plugin</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">--log-level</span></code> flag specifies the log level to use for the screen, the
+<code class="docutils literal notranslate"><span class="pre">--log-file</span></code> flag specifies a log file to write (debug and above), and the
+<code class="docutils literal notranslate"><span class="pre">--plugin</span></code> flag specifies the plugin Python file to use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">romans</span>
+
+<span class="c1"># describe and initialize parser</span>
+<span class="n">my_description</span> <span class="o">=</span> <span class="s2">&quot;My extension of the romans parser.&quot;</span>
+<span class="n">my_parser</span> <span class="o">=</span> <span class="n">romans</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">my_description</span><span class="p">)</span>
+
+<span class="c1"># add an argument</span>
+<span class="n">my_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--my-flag&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;My extension command line flag&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="romans.ArgumentParser.parse_args">
+<code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">list_input</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.ArgumentParser.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends standard argparse.parse_args() call.  Uses parse_known_args()
+to parse the base arguments and any additional arguments.  Returns any
+unknown arguments as a list.  The unknown arguments can be used to
+set plugin specific variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># parse command line</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="c1"># parse command line and start logger</span>
+<span class="n">args</span><span class="p">,</span> <span class="n">unknown_arg_list</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="c1"># arguments can be accessed using, e.g.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">)</span>
+
+<span class="c1"># unknown arguments are returned as a list</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">unknown_arg_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Warning</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Python uses prefix-matching, so that if a plugin uses an
+argument flag that matches the prefix of an already existing argument
+(including any argument defined in a utility), that argument will
+be not be passed onto the plugin.</p>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py function">
+<dt id="romans.init_logger">
+<code class="sig-prename descclassname">romans.</code><code class="sig-name descname">init_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="o">=</span><span class="default_value">'info'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.init_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts romans logger, sets logging level for console and opens log file,
+if desired.  Console only outputs messages while log file includes time stamps
+and origin of message.  Log file is set to debug and above.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># start logger for extension</span>
+<span class="n">my_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;romans.my_extension&quot;</span><span class="p">)</span>
+<span class="n">my_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;My log message.&quot;</span><span class="p">)</span>
+
+<span class="c1"># or use romans logger</span>
+<span class="n">romans</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;My message.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py class">
+<dt id="ensemble.Table">
+<em class="property">class </em><code class="sig-prename descclassname">ensemble.</code><code class="sig-name descname">Table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log</span></em>, <em class="sig-param"><span class="n">data_frame</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">csv_file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ensemble_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">file_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides storage and methods for keeping track of simulation data and
+files in an ensemble.  The central assumption is that the esnemble is
+stored in a directory structure of the form (names are arbitrary):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ensemble</span>
+<span class="o">|--</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">info</span>
+<span class="o">|--</span> <span class="n">simulation</span><span class="o">.</span><span class="mi">1</span>
+    <span class="o">|--</span> <span class="n">simulation</span><span class="o">.</span><span class="n">info</span>
+    <span class="o">|--</span> <span class="n">time</span><span class="o">.</span><span class="n">step</span><span class="o">.</span><span class="mi">1</span>
+    <span class="o">|--</span> <span class="n">time</span><span class="o">.</span><span class="n">step</span><span class="o">.</span><span class="mi">2</span>
+    <span class="o">|--</span> <span class="o">...</span>
+<span class="o">|--</span> <span class="n">simulation</span><span class="o">.</span><span class="mi">2</span>
+<span class="o">|--</span> <span class="n">simulation</span><span class="o">.</span><span class="mi">3</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>where ensemble is the central directory, containing multiple simulations,
+each having it’s own directory simulation.1, simulation.2, and so on.  The
+simulation directories then contain files containg time step data time.step.1,
+time.step.2, etc.  The directory names can be somewhat arbitrary and can
+have additional subdirectories and files, but the convention for using
+these utitilities is that the simulation directories can be specified using
+a Python like <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier.  For example, for the above ensemble,
+we would use <code class="docutils literal notranslate"><span class="pre">ensemble/simulation.%d[1:]</span></code> to specify the file name
+format for each of the simulation folders, then we would use
+<code class="docutils literal notranslate"><span class="pre">time.step.%d[1:]</span></code> to specify the time step files within each simulation
+folder.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> notation specifies the order and numbers in the directory/file
+names and using the Python slicing conventions.  For example <code class="docutils literal notranslate"><span class="pre">%d</span></code> specifies
+all names with an integer in the given location, <code class="docutils literal notranslate"><span class="pre">%d[5:10]</span></code> specifies
+all names with an integer starting at 5 and ending at 9, and <code class="docutils literal notranslate"><span class="pre">%d[100:2:-2]</span></code>
+specifies all names with an integer starting at 100 and descending by 2 to 2.</p>
+<p>The numbers in the directory/file names are assumed to be &gt;= 0 but are otherwise
+unrestriced.</p>
+<p>To instantiate an ensemble.Table object, use either a .csv file to
+create a full table, or an ensemble_spec, file_spec, and table header to
+create a single column table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_file=None</strong> (<em>string</em>) – file name of .csv file</p></li>
+<li><p><strong>ensemble_spec=None</strong> (<em>string</em>) – string with %d[::] giving
+simulation directories</p></li>
+<li><p><strong>file_spec=None</strong> (<em>string</em>) – string with %d[::] giving time step file names</p></li>
+<li><p><strong>header=None</strong> (<em>string</em>) – name for column header</p></li>
+</ul>
+</dd>
+</dl>
+<p>Note: If csv_file is provided then the other inputs are ignored.  If no
+inputs are provided then an empty table is created.</p>
+<dl class="py method">
+<dt id="ensemble.Table.add_col">
+<code class="sig-name descname">add_col</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">col</span></em>, <em class="sig-param"><span class="n">header</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.add_col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a column to the ensemble table.  This column can be a list or a dictionary.
+If it is a list, the column is added in the list order.  If it is a dictionary,
+the column is added in the order of the dictionary keys by matching with an
+existing column.  The column is added at the end of the table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>col</strong> (<em>list</em><em> or </em><em>dict</em>) – column data to add</p></li>
+<li><p><strong>header</strong> (<em>string</em>) – name of new column</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.convert_cols">
+<code class="sig-name descname">convert_cols</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cols</span></em>, <em class="sig-param"><span class="n">uri_root</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.convert_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the specified columns in the table to have the given URI root.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cols</strong> (<em>list</em>) – names of columns to convert</p></li>
+<li><p><strong>uri_root</strong> (<em>string</em>) – URI root to use for conversion</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.convert_specifier">
+<code class="sig-name descname">convert_specifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_spec</span></em>, <em class="sig-param"><span class="n">output_dir</span></em>, <em class="sig-param"><span class="n">output_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.convert_specifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an output file specifier matching the provided input specifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_spec</strong> (<em>string</em>) – file path with <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier</p></li>
+<li><p><strong>output_dir</strong> (<em>string</em>) – output directory for file spec files</p></li>
+<li><p><strong>output_type</strong> (<em>string</em>) – file extension of output files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>output file path with <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>out_file_spec (string)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.directories">
+<code class="sig-name descname">directories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory_spec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.directories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of directories matching <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier.  The specifier
+is expanded and existing directories are identified and returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>directory_spec</strong> (<em>string</em>) – directory name with <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of directories matching specifier</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>directory_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.ensemble_files">
+<code class="sig-name descname">ensemble_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ensemble_dirs</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.ensemble_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lists of files matching <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier in
+the ensemble_dirs.  The specifier is expanded and existing files are
+identified and returned.  The directories are expected to exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ensemble_dirs</strong> (<em>list</em>) – list of ensemble directories to expand (with specifier)</p></li>
+<li><p><strong>parallel</strong> (<em>boolean</em>) – run in parallel with ipyparallel (default False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of list of files matching specifier</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>sim_files (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.files">
+<code class="sig-name descname">files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_spec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of files matching <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier.  The specifier
+is expanded and existing files are identified and returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_spec</strong> (<em>string</em>) – file path with <code class="docutils literal notranslate"><span class="pre">%d[::]</span></code> specifier</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of files matching specifier</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>file_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.get_col">
+<code class="sig-name descname">get_col</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">col</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.get_col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a column from the ensemble table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>col</strong> (<em>string</em>) – name of column to return</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of contents in column</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>col_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.mirror_directories">
+<code class="sig-name descname">mirror_directories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_dir</span></em>, <em class="sig-param"><span class="n">ensemble_dirs</span></em>, <em class="sig-param"><span class="n">over_write</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.mirror_directories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a set of directories in the output directory which mirror
+the ensemble directory structure, unless output directory already
+exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<em>string</em>) – name of output directory to create</p></li>
+<li><p><strong>ensemble_dirs</strong> (<em>list</em>) – list of ensemble directories to mirror</p></li>
+<li><p><strong>over_write</strong> (<em>boolean</em>) – true to over-write existing directories</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>list of mirror directories (including output_dir),</dt><dd><p>None if directories were not created</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>mirror_dirs (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ensemble.Table.to_csv">
+<code class="sig-name descname">to_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_out</span></em>, <em class="sig-param"><span class="n">output_dir</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">cols</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">index_label</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.Table.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes out the table to a .csv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_out</strong> (<em>string</em>) – name of .csv file</p></li>
+<li><p><strong>output_dir</strong> (<em>string</em>) – output directory to use for .csv file</p></li>
+<li><p><strong>cols</strong> (<em>list</em>) – list of column headers to output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py class">
+<dt id="ensemble.EnsembleSpecifierError">
+<em class="property">class </em><code class="sig-prename descclassname">ensemble.</code><code class="sig-name descname">EnsembleSpecifierError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">specifier</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">'invalid %d[::] format'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ensemble.EnsembleSpecifierError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised for errors in %d[::] format specifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>specifier</strong> (<em>string</em>) – input specifier which caused the error</p></li>
+<li><p><strong>message</strong> (<em>string</em>) – explanation of the error</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py class">
+<dt id="romans.PluginTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">romans.</code><code class="sig-name descname">PluginTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">description</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides an extensible architecture for accomodating different input/output
+formats, machine learning algorithms, and simulations.</p>
+<p>Plugins must be defined as following in a seperate <code class="docutils literal notranslate"><span class="pre">.py</span></code> file:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">romans</span>
+
+<span class="k">class</span> <span class="nc">Plugin</span><span class="p">(</span><span class="n">romans</span><span class="o">.</span><span class="n">PluginTemplate</span><span class="p">):</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>See <code class="docutils literal notranslate"><span class="pre">memphis.py</span></code> for an example.</p>
+<dl class="py method">
+<dt id="romans.PluginTemplate.add_args">
+<code class="sig-name descname">add_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.add_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Note these flags should not conflict with already used flags (see
+parse_args class ArgumentParser).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># plugin adds command line argument</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--my_option&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;My option for plugin.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.check_args">
+<code class="sig-name descname">check_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.check_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks plugin arguments and raises exceptions if there are errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<cite>ArgumentParser</cite> object) – processed argument list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.convert_file">
+<code class="sig-name descname">convert_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_in</span></em>, <em class="sig-param"><span class="n">file_out</span></em>, <em class="sig-param"><span class="n">file_in_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">file_out_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.convert_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from file_in to file_out, where file_in can be a string or
+a buffer.  File types are inferred from extensions unless provided.  Uses
+the meshio library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_in</strong> (<em>string</em>) – name of input file</p></li>
+<li><p><strong>file_out</strong> (<em>string</em>) – name of output file</p></li>
+<li><p><strong>file_in_type</strong> (<em>string</em>) – file input format (regardless of extension)</p></li>
+<li><p><strong>file_out_type</strong> (<em>string</em>) – file output format (extension)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.convert_files">
+<code class="sig-name descname">convert_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_list</span></em>, <em class="sig-param"><span class="n">output_dir</span></em>, <em class="sig-param"><span class="n">output_type</span></em>, <em class="sig-param"><span class="n">input_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.convert_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a list of files to file of type output_type in output_dir with
+same root name.  Input file types are inferred from extensions, unless type
+is provided.  Output type is also inferred, unless provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_list</strong> (<em>list</em>) – list of file names to read</p></li>
+<li><p><strong>output_dir</strong> (<em>string</em>) – name of output directory to write files</p></li>
+<li><p><strong>output_type</strong> (<em>string</em>) – extension of file format for output</p></li>
+<li><p><strong>input_type</strong> (<em>sring</em>) – file input type (regardless of extension)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of files written using full path</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>files_written (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.expand">
+<code class="sig-name descname">expand</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em>, <em class="sig-param"><span class="n">header</span></em>, <em class="sig-param"><span class="n">file_list</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.expand" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expands a column in a ensemble table by reading the file links and
+creating files appropriate to the plugin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<em>ensemble Table object</em>) – table with column containing file links</p></li>
+<li><p><strong>header</strong> (<em>string</em><em> or </em><em>int</em>) – name of column to with file links</p></li>
+<li><p><strong>file_list</strong> (<em>list</em>) – list of files to expand</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments dependent on plugin</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.init">
+<code class="sig-name descname">init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize any local variables from command line arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<cite>ArgumentParser</cite> object) – processed argument list</p>
+</dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">my_var</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">my_option</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.parse_args">
+<code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg_list</span><span class="o">=</span><span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses arguments specific to plugin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg_list</strong> (<em>list</em>) – list of command line flags and arguments</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><cite>ArgumentParser</cite> processed argument list,
+list of un-recognized arguments</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>args (object), unknown_args (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.preprocess">
+<code class="sig-name descname">preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs data pre-processing specific to a simulation.  This code must
+be provided by the plugin, otherwise the data is returned unchanged.  Note
+that this type of pre-processing is assumed to be per file (e.g. per time
+step or per simulation).  Pre-processing that occurs over the entire
+ensemble is done by the algorithm codes (e.g. dimension reduction or
+proxy models).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>object</em>) – data to be pre-processed</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>pre-processed numpy array with simulations per row</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>data_out (2d array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.read_file">
+<code class="sig-name descname">read_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_in</span></em>, <em class="sig-param"><span class="n">file_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.read_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file associated with a single time step in an ensemble.
+File type is inferred from extension unless provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_in</strong> (<em>string</em>) – name of file to read</p></li>
+<li><p><strong>file_type</strong> (<em>string</em>) – file input type (regardless of extension)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>file contents</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>data (object)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.read_file_batch">
+<code class="sig-name descname">read_file_batch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">batch_files</span></em>, <em class="sig-param"><span class="n">file_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">flatten</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.read_file_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a batch of files from an ensemble.  File type is inferred from
+extension unless provided.  Can be run in parallel using ipyparallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_files</strong> (<em>list</em>) – list of files to read</p></li>
+<li><p><strong>file_type</strong> (<em>string</em>) – file input type (regardless of extension)</p></li>
+<li><p><strong>parallel</strong> (<em>boolean</em>) – to run in parallel using ipyparallel</p></li>
+<li><p><strong>flatten</strong> (<em>boolean</em>) – flatten matrix files to vectors (defaults True)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>file of file contents</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>data_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.read_input_deck">
+<code class="sig-name descname">read_input_deck</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_list</span></em>, <em class="sig-param"><span class="n">file_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.read_input_deck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file or files which provide the input parameters for a simulation.
+Note that this code must be provided by the plugin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_list</strong> (<em>list</em>) – list of file names to read (can be a list of one file)</p></li>
+<li><p><strong>file_type</strong> (<em>string</em>) – file type (regardless of extension)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>meta data for the simulation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>file_data (object)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.PluginTemplate.write_file">
+<code class="sig-name descname">write_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">file_out</span></em>, <em class="sig-param"><span class="n">file_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.PluginTemplate.write_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes time step data from an ensemble to a file.  File type is
+inferred from extension unless provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<cite>meshio</cite> mesh) – mesh data to be written</p></li>
+<li><p><strong>file_out</strong> (<em>string</em>) – file name for output file</p></li>
+<li><p><strong>file_type</strong> (<em>string</em>) – file extension</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py function">
+<dt id="romans.plugin">
+<code class="sig-prename descclassname">romans.</code><code class="sig-name descname">plugin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plugin_name</span></em>, <em class="sig-param"><span class="n">arg_list</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function to instantiate a plugin module from a file and a list of
+command line arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plugin_name</strong> (<em>string</em>) – module name (no .py) or file name of module (ending in .py)</p></li>
+<li><p><strong>arg_list</strong> (<em>list</em>) – list containing command line flags and argumetns</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>plugin as Python namespace,
+list of un-recognized arguments</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plugin (object), unknown_args (list)</p>
+</dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import and initialize plugin</span>
+<span class="n">plugin</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">romans</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">plugin</span><span class="p">,</span> <span class="n">arg_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py class">
+<dt id="romans.algorithms.reduction.DimensionReduction">
+<em class="property">class </em><code class="sig-prename descclassname">romans.algorithms.reduction.</code><code class="sig-name descname">DimensionReduction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains wrappers for dimension reduction algorithms in sci-kit
+learn and pytorch for use with the romans tools.  It includes it’s own parser
+to specify algorithms and algorithm parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg_list</strong> (<em>list</em>) – list of arguments to specific to reduction</p></li>
+<li><p><strong>model_file</strong> (<em>string</em>) – name of model file containing reduction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># get parser and reduction algorithm code</span>
+<span class="kn">import</span> <span class="nn">romans</span>
+<span class="kn">import</span> <span class="nn">algorithms.reduction</span> <span class="k">as</span> <span class="nn">algorithms</span>
+
+<span class="c1"># parse command line</span>
+<span class="n">my_parser</span> <span class="o">=</span> <span class="n">romans</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+<span class="c1"># parse command line and start logger</span>
+<span class="n">args</span><span class="p">,</span> <span class="n">arg_list</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="c1"># set up dimension reduction algorithm using command line arguments</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithms</span><span class="o">.</span><span class="n">DimensionReduction</span><span class="p">(</span><span class="n">arg_list</span><span class="o">=</span><span class="n">arg_list</span><span class="p">)</span>
+
+<span class="c1"># use time_align to use a time-aligned model, where time_align</span>
+<span class="c1"># specifies the number of dimension to use per time step</span>
+<span class="n">time_aligned_algorithm</span> <span class="o">=</span> <span class="n">algorithms</span><span class="o">.</span><span class="n">DimensionReduction</span><span class="p">(</span><span class="n">time_align</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># set up data in variable X, data points per row</span>
+
+<span class="c1"># do dimension reduction (ala sklearn)</span>
+<span class="n">algorithm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1"># reduced data to lower dimension</span>
+<span class="n">reduced_data</span> <span class="o">=</span> <span class="n">algorithm</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.data_explained">
+<code class="sig-name descname">data_explained</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.data_explained" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the percent of information captured per dimension
+per model.  For PCA this would be the explained variance
+ratio.  If a model doesn’t compute this information, an
+empty list is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of vectors of percent captured</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>data_explained (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">time_step</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train dimension reduction model using samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array</em>) – data with points as rows</p></li>
+<li><p><strong>time_step</strong> (<em>int</em>) – train model at given time step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.has_inverse">
+<code class="sig-name descname">has_inverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.has_inverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if user selected algorithm has an inverse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if algorithm has an inverse</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>has_inverse (bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.is_incremental">
+<code class="sig-name descname">is_incremental</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.is_incremental" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the user selected an incremental algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if algorithm can be used in batch mode</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>is_incremental (bool)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_in</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a dimension reduction model from a .pkl file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_in</strong> (<em>string</em>) – file name with saved model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.num_dim">
+<code class="sig-name descname">num_dim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.num_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get desired number of dimensions in reduction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>number of dimensions for desired reduction</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>num_dim (int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.partial_fit">
+<code class="sig-name descname">partial_fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">time_step</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.partial_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train an incremental model using samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array</em>) – data with points as rows</p></li>
+<li><p><strong>time_step</strong> (<em>int</em>) – model time step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_out</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a dimension reduction model to a .pkl file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_out</strong> (<em>string</em>) – file name to save file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.time_align">
+<code class="sig-name descname">time_align</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">compute_rotations</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.time_align" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time align reduced data using the Kabsch algorithm.  Expects the incoming
+dimension to be time_align_dim and truncates the dimension to num_dim
+after alignment.</p>
+<dl class="simple">
+<dt>Args: data (list of array): list of data matrices of shape (sim, dim)</dt><dd><p>compute_rotations (boolean): False to use existing rotation matrices</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of data with shape (sim, reduced dim)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>aligned_data (list of array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.time_align_dim">
+<code class="sig-name descname">time_align_dim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.time_align_dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number of dimensions to use for time alignment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>number of time alignment dimension</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>time_align (int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.reduction.DimensionReduction.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">time_step</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.reduction.DimensionReduction.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform data to lower dimensional representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>numpy array</em>) – data with points as rows</p></li>
+<li><p><strong>time_step</strong> (<em>int</em>) – transform data at given time step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>reduced data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>data (array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py class">
+<dt id="romans.algorithms.proxy.ProxyModel">
+<em class="property">class </em><code class="sig-prename descclassname">romans.algorithms.proxy.</code><code class="sig-name descname">ProxyModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">model_file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains the algorithms for trainig and testing reduced order
+proxy models using reduced dimension data.  It includes it’s own parser
+to specify algorithms and algorithm parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg_list</strong> (<em>list</em>) – list of arguments to specific to proxy model</p></li>
+<li><p><strong>model_file</strong> (<em>string</em>) – name of model file containing proxy model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example</dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># get parser and algorithms</span>
+<span class="kn">import</span> <span class="nn">romans</span>
+<span class="kn">import</span> <span class="nn">algorithms.proxy</span> <span class="k">as</span> <span class="nn">algorithms</span>
+
+<span class="c1"># parse command line</span>
+<span class="n">my_parser</span> <span class="o">=</span> <span class="n">romans</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+<span class="c1"># parse command line and start logger</span>
+<span class="n">args</span><span class="p">,</span> <span class="n">arg_list</span> <span class="o">=</span> <span class="n">my_parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+<span class="c1"># set up proxy model algorithm using command line arguments</span>
+<span class="n">algorithm</span> <span class="o">=</span> <span class="n">algorithms</span><span class="o">.</span><span class="n">ProxyModel</span><span class="p">(</span><span class="n">arg_list</span><span class="o">=</span><span class="n">arg_list</span><span class="p">)</span>
+
+<span class="c1"># set up data in variable X as list of reduced dimension</span>
+<span class="c1"># matrices, one matrix per simulation</span>
+
+<span class="c1"># train proxy model reduction</span>
+<span class="n">algorithm</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1"># get training losses per dimension</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">algorithm</span><span class="o">.</span><span class="n">loss</span><span class="p">())</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="romans.algorithms.proxy.ProxyModel.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_in</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a proxy model from a .pkl file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_in</strong> (<em>string</em>) – file name with saved model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.proxy.ProxyModel.loss">
+<code class="sig-name descname">loss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel.loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return optimization loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>loss over optimization, per dimension</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>loss (list of arrays)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.proxy.ProxyModel.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_out</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a proxy model to a .pkl file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_out</strong> (<em>string</em>) – file name to save file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.proxy.ProxyModel.test">
+<code class="sig-name descname">test</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">future</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test a proxy model, by producing predictions from data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list of arrays</em>) – list of data matrices per simulation</p></li>
+<li><p><strong>future</strong> (<em>int</em>) – number of time steps to predict past end of data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of predicted data matrices</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>predicted_data (list of arrays)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="romans.algorithms.proxy.ProxyModel.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#romans.algorithms.proxy.ProxyModel.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train a proxy model, using reduced dimension data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>list of arrays</em>) – list of data matrices per simulation</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Extension</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugins">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="algorithms.html" title="previous chapter">Algorithms</a></li>
+      <li>Next: <a href="development.html" title="next chapter">Development</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/extension.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

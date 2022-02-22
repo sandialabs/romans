@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugins &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Algorithms" href="algorithms.html" />
+    <link rel="prev" title="Utilities" href="utilities.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="plugins">
+<h1>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
+<p>The romans package uses plugins to provide functionality for different simulations, or
+really any other outside software.  The plugins largely handle differences in file formats
+between different simulations and software.  The following plugins are available for romans.</p>
+<p>User interaction with plugins is handled by command line arguments passed through romans
+and onto the plugin.  As a result, plugin authors must not use command line arguments
+with the same or even prefix matched names of the romans, or romans utility arguments.  Any such
+arguments will be interpreted incorrextly and will likely fail.</p>
+<p>To see the availble options for a romans plugin, call the plugin directly with –help option,
+as in:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">romans</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">memphis</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<div class="section" id="memphis">
+<h2>MEMPHIS<a class="headerlink" href="#memphis" title="Permalink to this headline">¶</a></h2>
+<p>The MEMPHIS plugin is the default plugin when using romans and allows interoperatability
+with the MEMPHIS phase-field simulation.  MEMPHIS command line options are given below.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: memphis.py [-h] [--field-var FIELD_VAR] [--binary] [--auto-correlate]
+                  [--color-scale COLOR_SCALE COLOR_SCALE]
+                  [--output-format OUTPUT_FORMAT] [--sample SAMPLE]
+                  [--output-quality OUTPUT_QUALITY] [--output-color]
+                  [--video-fps VIDEO_FPS]
+
+The MEMPHIS plugin provides support for the MEMPHIS phase field simulations.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --field-var FIELD_VAR
+                        Name of field variable to analyze, e.g. &quot;--field-var
+                        phase_field&quot;. The field variable name is included in
+                        the name of any output file.
+  --binary              Converts field variable to binary by clipping anything
+                        less than 0 to 0 and anyting greater than 0 to 1.
+  --auto-correlate      Performs auto-correlation as a pre-processing for
+                        dimension reduction (note this option requires the
+                        --binary flag to be used).
+  --color-scale COLOR_SCALE COLOR_SCALE
+                        Gives the color scale for the field variable when
+                        creating jpg or mp4, e.g. &quot;--color-scale 0 1&quot; for min
+                        color value of 0 and max color value of 1. Note that
+                        values above and below the color scale are
+                        automatically clipped.
+  --output-format OUTPUT_FORMAT
+                        The output format options recognized by the MEMPHIS
+                        plugin include: &quot;npy&quot; -- saves the field variable for
+                        a single timestep to a numpy array; &quot;sim.npy&quot; -- saves
+                        the field variable for every timestep in a simulation
+                        to a 3D numpy array; &quot;rd.npy&quot; -- saves the reduced
+                        dimensional representation to a numpy array (can be
+                        either a time step matrix or a 3D full simulation
+                        matrix); &quot;jpg&quot; -- saves a .jpg image of the field
+                        variable for a single timestep; &quot;mp4&quot; -- saves a .mp4
+                        movie of the field variable for every timestep in a
+                        simulation.
+  --sample SAMPLE       Sample image by given percent (if &lt; 100 it is
+                        downsampling, if &gt; 100 it is upsampling).
+  --output-quality OUTPUT_QUALITY
+                        Quality of jpg image, as a number between 1 and 95
+                        (only relevant if outputing images, defaults to 95).
+  --output-color        Output images as color (otherwise they are output as
+                        grayscale).
+  --video-fps VIDEO_FPS
+                        Number of frames per second for video creation,
+                        defaults to 25).
+</pre></div>
+</div>
+</div>
+<div class="section" id="videoswarm">
+<h2>VideoSwarm<a class="headerlink" href="#videoswarm" title="Permalink to this headline">¶</a></h2>
+<p>The VideoSwarm plugin provides output support for the files required to create a
+VideoSwarm model in Slycat.  The plugin can be called from the table.py utlity as
+described in <a class="reference internal" href="example.html#example"><span class="std std-ref">Example</span></a>.  The command line options for the VideoSwarm plugin are
+shown below.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: videoswarm.py [-h] [--remove-expand-col] [--video-fps VIDEO_FPS]
+
+The videoswarm plugin provides the ability to convert time-aligned dimension
+reduction algorithms to Slycat VideoSwarm format.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --remove-expand-col   Remove the expanded column when writing out videoswarm
+                        files.
+  --video-fps VIDEO_FPS
+                        Video frames per second, must be &gt; 0, defaults to 25.
+</pre></div>
+</div>
+</div>
+<div class="section" id="parameter-space">
+<h2>Parameter Space<a class="headerlink" href="#parameter-space" title="Permalink to this headline">¶</a></h2>
+<p>The Parameter Space plugin supports output that can be used to create Parameter Space
+models in Slycat.  The plugin can be called from the table.py utility using the <cite>–expand</cite>
+option, as demonstrated in <a class="reference internal" href="example.html#example"><span class="std std-ref">Example</span></a>.  The command line options for the plugin are
+given below.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: parameter_space.py [-h] [--num-dim NUM_DIM] [--remove-expand-col]
+                          [--include-original-index]
+
+The parameter space plugin provides the ability to convert dimension reduction
+results to Slycat Parameter Space format.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --num-dim NUM_DIM     Number of from input files to include in .csv output
+                        file.
+  --remove-expand-col   Remove the expanded column when writing out parameter
+                        space file.
+  --include-original-index
+                        Add original (repeated) index to expanded output .csv
+                        file.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#memphis">MEMPHIS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#videoswarm">VideoSwarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-space">Parameter Space</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="utilities.html" title="previous chapter">Utilities</a></li>
+      <li>Next: <a href="algorithms.html" title="next chapter">Algorithms</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/plugins.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

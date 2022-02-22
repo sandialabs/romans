@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Extension" href="extension.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<p>In addition to extending the toolbox, development of additional core features is also
+possible.  The easiest way to further develop romans is to use the drivers in the <code class="docutils literal notranslate"><span class="pre">test</span></code>
+directory.</p>
+<p>The general approach taken to date is to write a utility code (<a class="reference internal" href="utilities.html#utilities"><span class="std std-ref">Utilities</span></a>)
+that interfaces betweent the command line and the actual romans classes and plugins.  To test
+these utility codes, we have written a variety of drivers which set up the parameters
+and call the utilites from Python.  We use the MEMPHIS data to test the codes, and pointers to
+the data is coded directly in the test scripts.</p>
+<p>Therefore the test scripts will not work for a general user, but if you provide test data
+and modify the scripts to point to that data, then the test scripts should work.  Alternatively,
+you can write your own utilities and test codes.</p>
+<p>Finally, there is a certain amount of inter-dependence between the tests.  For example,
+<code class="docutils literal notranslate"><span class="pre">test-reduce.py</span></code> must precede <code class="docutils literal notranslate"><span class="pre">test-table.py</span></code> to provide files for creating tables.</p>
+<div class="section" id="test-table-py">
+<h2>test-table.py<a class="headerlink" href="#test-table-py" title="Permalink to this headline">¶</a></h2>
+<p>This code tests the <code class="docutils literal notranslate"><span class="pre">table.py</span></code> utility and can be executed using:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">test</span><span class="o">-</span><span class="n">table</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Since the <code class="docutils literal notranslate"><span class="pre">table.py</span></code> utility is not computationally expensive, there are no command line options.
+Rather, every test is exectued.  For the other utilities, there are command line options.</p>
+</div>
+<div class="section" id="test-convert-py">
+<h2>test-convert.py<a class="headerlink" href="#test-convert-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: test-convert.py [-h] [--delete-output-dir] [--test-UI]
+                       [--test-conversions] [--test-end-state]
+                       [--test-parallel] [--test-sample] [--test-all]
+
+Generate various test .csv files from phase-field ensemble data.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --delete-output-dir  Delete output directory before starting tests.
+  --test-UI            Test command line UI for convert.py.
+  --test-conversions   Test conversions.
+  --test-end-state     Do end-state conversions (e.g. images and movies).
+  --test-parallel      Run parallel tests using ipyparallel (must have
+                       ipengine running).
+  --test-sample        Test image downsampling.
+  --test-all           Run every test.
+</pre></div>
+</div>
+</div>
+<div class="section" id="test-reduce-py">
+<h2>test-reduce.py<a class="headerlink" href="#test-reduce-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: test-reduce.py [-h] [--delete-output-dir] [--test-UI]
+                      [--test-save-load] [--test-split] [--test-end-state]
+                      [--test-time-aligned] [--test-all-time] [--test-betti]
+                      [--test-umap] [--test-auto-encoder] [--test-var-auto]
+                      [--test-parallel] [--test-restart] [--test-rd-npy]
+                      [--test-all]
+
+Generate various test .csv files from phase-field ensemble data.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --delete-output-dir  Delete output directory before starting tests.
+  --test-UI            Test command line UI for reduce.py.
+  --test-save-load     Test save and load capability in reduce.py.
+  --test-split         Test training/test set split using phase-filed
+                       simulations 1-400 for training set and simulations &gt;
+                       400 for test set.
+  --test-end-state     Do end-state dimension reductions.
+  --test-time-aligned  Do time-aligned dimension reductions.
+  --test-all-time      Do dimension reductions with all time steps
+                       simultaneously.
+  --test-betti         Do Betti number calculations.
+  --test-umap          Perform umap reduction on test set.
+  --test-auto-encoder  Do auto-encoder dimension reductions.
+  --test-var-auto      Test variational auto-encoder.
+  --test-parallel      Run parallel tests.
+  --test-restart       Run restart testing.
+  --test-rd-npy        Test dimension reduction loaded from rd.npy file.
+  --test-all           Run every test.
+</pre></div>
+</div>
+</div>
+<div class="section" id="test-model-py">
+<h2>test-model.py<a class="headerlink" href="#test-model-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: test-model.py [-h] [--test-UI] [--test-LSTM] [--test-all]
+
+Run various tests on the model.py script.
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --test-UI    Test command line UI for reduce.py.
+  --test-LSTM  Test LSTM model using reduced dimension test data.
+  --test-all   Run every test.
+</pre></div>
+</div>
+</div>
+<div class="section" id="test-validate-py">
+<h2>test-validate.py<a class="headerlink" href="#test-validate-py" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: test-validate.py [-h] [--delete-output-dir] [--test-UI]
+                        [--test-reduction] [--test-proxy] [--test-all]
+
+Run various tests on the validate.py script.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --delete-output-dir  Delete output directory before starting tests.
+  --test-UI            Test command line UI for validate.py.
+  --test-reduction     Test reduction validation.
+  --test-proxy         Test proxy validation.
+  --test-all           Run every test.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#test-table-py">test-table.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-convert-py">test-convert.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-reduce-py">test-reduce.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-model-py">test-model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-validate-py">test-validate.py</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="extension.html" title="previous chapter">Extension</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/development.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

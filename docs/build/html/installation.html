@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Operation" href="usage.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Numerical simulations are typically run on high-performance computing clusters.
+Thus, the romans package will typically be installed on a cluster.  Depending on
+the cluster, the code can be installed in a different ways.</p>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>Python 3: You will need Python 3 to use the romans tools.  At the time of this writing, it
+has been tested using version 3.8.3.</p></li>
+<li><p>ipyparallel: You will need ipyparallel to run on the clusters.  Use <code class="docutils literal notranslate"><span class="pre">pip</span>
+<span class="pre">install</span> <span class="pre">ipyparallel</span></code>.  You may also need to export the path to the ipython
+command in your .bash_profile file to provide access to local installs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>pip install ipyparallel --proxy your-proxy:your-port --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
+export PATH=$PATH:path-to-ipyparallel-bin
+</pre></div>
+</div>
+</li>
+<li><p>meshio: You will need to install the meshio package (currently using
+<a class="reference external" href="https://pypi.org/project/meshio/1.8.9/">https://pypi.org/project/meshio/1.8.9/</a>), use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">meshio</span></code>.</p></li>
+<li><p>imageio: For converting to images and videos, you will need to install imagio
+(<a class="reference external" href="https://pypi.org/project/imageio/">https://pypi.org/project/imageio/</a>) and imageio-ffmpeg (<a class="reference external" href="https://pypi.org/project/imageio-ffmpeg/">https://pypi.org/project/imageio-ffmpeg/</a>)
+using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">imageio</span></code> and <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">imageio-ffmpeg</span></code>.</p></li>
+<li><p>sklearn: For the dimension redution algorithms, you need scikit-learn (see
+<a class="reference external" href="https://scikit-learn.org/">https://scikit-learn.org/</a>).  Use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sklearn</span></code>.</p></li>
+<li><p>umap-learn: For the dimension reduction algorithm Umap (<a class="reference external" href="https://umap-learn.readthedocs.io/en/latest/">https://umap-learn.readthedocs.io/en/latest/</a>),
+you need <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">umap-learn</span></code>.  Note: do not <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">umap</span></code> as that is an entirely different package.</p></li>
+<li><p>joblib: You may also need joblib, depending on whether or not it is included with your
+version of sklearn (<a class="reference external" href="https://joblib.readthedocs.io/en/latest/">https://joblib.readthedocs.io/en/latest/</a>).  You can instll joblib with
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">joblib</span></code>.</p></li>
+<li><p>torch: For the neural networks we use PyTorch (<a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a>), use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">torch</span></code>.</p></li>
+<li><p>pymks: The MEMPHIS plugin uses PyMKS (<a class="reference external" href="http://pymks.org/en/stable/rst/README.html">http://pymks.org/en/stable/rst/README.html</a>), use
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pymks</span></code>.</p></li>
+</ul>
+<p>Note that you may need to use <code class="docutils literal notranslate"><span class="pre">--proxy</span></code> and <code class="docutils literal notranslate"><span class="pre">--trusted-host</span></code> options with pip to install
+meshio from behind a firewall, as shown in the ipyparallel example above.</p>
+</div>
+<div class="section" id="local">
+<h2>Local<a class="headerlink" href="#local" title="Permalink to this headline">¶</a></h2>
+<p>To install the package from source, first clone the repository in your home directory,
+e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">name</span><span class="o">/</span><span class="n">romans</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>Next, set your PYTHONPATH environment variable using, for example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PYTHONPATH</span><span class="o">=/</span><span class="n">users</span><span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">name</span><span class="o">/</span><span class="n">romans</span><span class="p">:</span><span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">name</span><span class="o">/</span><span class="n">romans</span><span class="o">/</span><span class="n">romans</span>
+</pre></div>
+</div>
+<p>Note that you can set this path in ~/.bash_profile if you are using Unix so that
+<code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> will be automatically set whenever you login.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#local">Local</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="usage.html" title="next chapter">Operation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

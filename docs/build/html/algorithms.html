@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithms &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Extension" href="extension.html" />
+    <link rel="prev" title="Plugins" href="plugins.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="algorithms">
+<h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
+<p>The romans package uses various algorithms to analyze simulation data.  The algorithms
+are implemented as plugins and include dimension reduction algorithms from the Python
+package scikit-learn and the deep learning package pytorch.  Custom algoirthms are also
+available.</p>
+<p>Further, the algorithms are implemented as plugins, so user defined algorithms can also
+be added.  Command line arguments are used to pass parameters to the algorithms.</p>
+<p>To see the availble options for a romans algorithm plugin, call the plugin directly with
+–help option, as in:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">romans</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">reduction</span> <span class="o">--</span><span class="n">help</span>
+</pre></div>
+</div>
+<div class="section" id="dimension-reduction">
+<h2>Dimension Reduction<a class="headerlink" href="#dimension-reduction" title="Permalink to this headline">¶</a></h2>
+<p>The dimension reduction algorithms are provided in the <code class="docutils literal notranslate"><span class="pre">algorithms/reduction.py</span></code>
+module.  Command line options are given below.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: reduction.py [-h]
+                    [--algorithm {PCA,incremental-PCA,Isomap,tSNE,auto-encoder,Umap}]
+                    [--pre-process {standard,minmax}] [--num-dim NUM_DIM]
+                    [--time-align TIME_ALIGN] [--whiten]
+                    [--model-type {MLP,var}] [--epochs EPOCHS]
+                    [--batch-size BATCH_SIZE]
+                    [--MLP-arch MLP_ARCH [MLP_ARCH ...]]
+                    [--num-processes NUM_PROCESSES]
+
+Dimension reduction support for the romans tools.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --algorithm {PCA,incremental-PCA,Isomap,tSNE,auto-encoder,Umap}
+                        Dimension reduction algorithm to apply. Options are:
+                        {PCA, incremental-PCA, Isomap, tSNE, auto-encoder,
+                        Umap}.
+  --pre-process {standard,minmax}
+                        Preprocessing for dimension reduction. Options are:
+                        {standard, minmax}.
+  --num-dim NUM_DIM     Number of desired dimensions in reduction.
+  --time-align TIME_ALIGN
+                        Train reduction model per time step to given dimension
+                        then align using Kabsch algorithm.
+  --whiten              Whiten before PCA.
+  --model-type {MLP,var}
+                        Type of auto-encoder. Options are: {MLP, var}.
+  --epochs EPOCHS       Number of epochs to use for training auto-encoder.
+  --batch-size BATCH_SIZE
+                        Batch size for training auto-encoder.
+  --MLP-arch MLP_ARCH [MLP_ARCH ...]
+                        Integers specifying size of hidden layers in the MLP.
+  --num-processes NUM_PROCESSES
+                        Number of processes to use for training auto-encoder.
+</pre></div>
+</div>
+</div>
+<div class="section" id="proxy-models">
+<h2>Proxy Models<a class="headerlink" href="#proxy-models" title="Permalink to this headline">¶</a></h2>
+<p>The reduced order proxy model algorithms are provided in the <code class="docutils literal notranslate"><span class="pre">algorithms/proxy.py</span></code>
+module. The command line options for the proxy models are shown below.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: proxy.py [-h] [--algorithm {LSTM}] [--LSTM-steps LSTM_STEPS]
+
+Reduced order proxy model support for the romans tools.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --algorithm {LSTM}    Proxy model algorithm to apply. Options are: {LSTM}.
+  --LSTM-steps LSTM_STEPS
+                        Number of steps to use in LSTM optimization.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dimension-reduction">Dimension Reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#proxy-models">Proxy Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="plugins.html" title="previous chapter">Plugins</a></li>
+      <li>Next: <a href="extension.html" title="next chapter">Extension</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/algorithms.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

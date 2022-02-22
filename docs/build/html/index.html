@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROMANS &#8212; ROMANS 1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="romans">
+<h1>ROMANS<a class="headerlink" href="#romans" title="Permalink to this headline">¶</a></h1>
+<p>“ROMANS” is short for “Reduced Order Modeling for Accelerating Numerical Simulations”.
+This project consists of Python utitlies that facilitate the analysis and acceleration of
+numerical simulations using proxy machine learning models.  The code itself is also
+referenced using the term “romans”, e.g. <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">romans</span></code>.</p>
+<p>Version 1.0.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#local">Local</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#ensemble-data">Ensemble Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#pre-processing">Pre-processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#dimension-reduction">Dimension reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#training-proxy">Training Proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#testing-proxy">Testing Proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#acceleration">Acceleration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example.html#test-data">Test Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#full-dataset">Full dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#table-py">table.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#convert-py">convert.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#reduce-py">reduce.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#model-py">model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#validate-py">validate.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html#memphis">MEMPHIS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html#videoswarm">VideoSwarm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plugins.html#parameter-space">Parameter Space</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="algorithms.html#dimension-reduction">Dimension Reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithms.html#proxy-models">Proxy Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#plugins">Plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension.html#api">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="development.html#test-table-py">test-table.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#test-convert-py">test-convert.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#test-reduce-py">test-reduce.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#test-model-py">test-model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="development.html#test-validate-py">test-validate.py</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and Tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/sandia_laurel_icon.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="#">ROMANS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="introduction.html" title="next chapter">Introduction</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2021 National Technology and Engineering Solutions of Sandia, LLC.  Under the terms of Contract DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
